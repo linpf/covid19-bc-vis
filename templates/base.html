@@ -1,0 +1,72 @@
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width,initial-scale=1, shrink-to-fit=no">
+
+    <title>{% block title %}COVID-19 in BC{% endblock title %}</title>
+    
+    {# Load CSS and JavaScript #}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    
+    {% bootstrap_messages %}
+
+</head>
+<body class="pt-5 bg-dark">
+    
+    <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark mb-1">
+        
+        <a class="navbar-brand" href="{% url 'home' %}">COVID-19 in BC</a>
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+        data-target="#navbarCollapse" aria-controls="navbarCollapse"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+  
+            <div class="dropdown">
+              <button type="button" class="btn btn-outline-info dropdown-toggle ml-3" data-toggle="dropdown">
+                BC
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'bc_cases_and_mortality' %}">Cases and Mortality in BC</a>
+                <a class="dropdown-item" href="{% url 'bc_cases_and_testing_by_ha' 'BC' %}">Cases and Testing in BC</a>
+                <a class="dropdown-item" href="{% url 'bc_cases_and_testing_by_ha' 'HA' %}">Cases and Testing by HA</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'bc_cases_by_age_group' %}">Cases distribution by Age Group</a>
+                <a class="dropdown-item" href="{% url 'bc_cases_by_sex' %}">Cases distribution by Sex</a>
+                <a class="dropdown-item" href="{% url 'bc_cases_by_ha' %}">Cases distribution by HA</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{% url 'bc_lab_tests' 'BC' %}">Lab Tests in BC</a>
+                <a class="dropdown-item" href="{% url 'bc_lab_tests' 'HA' %}">Lab Tests by HA</a>
+              </div>
+            </div>
+            
+            <div class="dropdown">
+              <button type="button" class="btn btn-outline-success dropdown-toggle ml-3" data-toggle="dropdown">
+                Reference Links
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="http://www.bccdc.ca/health-info/diseases-conditions/covid-19/data" target="_blank">BC COVID-19 Data</a>
+                <a class="dropdown-item" href="https://experience.arcgis.com/experience/a6f23959a8b14bfa989e3cda29297ded" target="_blank">British Columbia COVID-19 Dashboard</a>
+              </div>
+            </div>
+            
+        </div>
+        
+    </nav>
+    
+    <div class="page-header pt-3">
+        {% block header %}{% endblock %}
+    </div>
+    <div class="container-fluid bg-black m-lg-0"> 
+        {% block content %}
+        {% endblock content %}
+    </div> 
+</body>
+</html>

@@ -1,0 +1,8 @@
+cd ~/Covid19Canada
+git pull origin master
+cd ~/covid19-vis
+cp ~/Covid19Canada/* data/Covid19Canada 2>/dev/null
+cp ~/Covid19Canada/timeseries_canada/*.csv data/Covid19Canada/timeseries_canada 
+cp ~/Covid19Canada/timeseries_prov/*.csv data/Covid19Canada/timeseries_prov 
+cp ~/Covid19Canada/timeseries_hr/*.csv data/Covid19Canada/timeseries_hr 
+cp ~/Covid19Canada/other/*.csv data/Covid19Canada/other 

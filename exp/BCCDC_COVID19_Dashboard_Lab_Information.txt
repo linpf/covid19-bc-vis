@@ -1,0 +1,10 @@
+"Date","Region","New_Tests","Total_Tests","Positivity","Turn_Around"
+2020-01-23,"BC",2,2,0,24
+2020-01-23,"Fraser",0,0,0,0
+2020-01-23,"Interior",0,0,0,0
+2020-01-23,"Northern",0,0,0,0
+2020-01-23,"Unknown",0,0,0,0
+2020-01-23,"Vancouver Coastal",2,2,0,24
+2020-01-23,"Vancouver Island",0,0,0,0
+2020-01-25,"BC",4,6,0,60
+2020-01-25,"Fraser",3,3,0,64

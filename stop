@@ -1,0 +1,1 @@
+for id in `ps -ax | grep python | grep covid19-bc-vis | cut -c1-5`; do     kill -9 $id; done

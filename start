@@ -1,0 +1,3 @@
+export VIS_HOME=$HOME/covid19-bc-vis
+cd $VIS_HOME
+pipenv run  $VIS_HOME/manage.py runserver 0.0.0.0:8000

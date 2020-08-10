@@ -1,0 +1,13 @@
+[Unit]
+Description="New Application"
+After=network.target
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/covid19-vis
+ExecStart=/bin/sh /home/pi/covid19-vis/start
+ExecStop=/bin/sh /home/pi/covid19-vis/stop
+User=pi
+Group=pi
+KillMode=none
+[Install]
+WantedBy=multi-user.target
