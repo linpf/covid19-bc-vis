@@ -14,9 +14,9 @@ def home_view(request):
     
 
 @cache_page(60 * 15)
-def bc_cases_by_age_group_view(request):
+def bc_cases_by_age_group_view(request, end_date = None):
 
-    charts = bccdc_cases_by_age_group_charts()
+    charts = bccdc_cases_by_age_group_charts(request, end_date)
     context = {
         "charts": charts,
     }
@@ -97,7 +97,7 @@ def bc_lab_tests_before_view(request, region, end_date):
     return render(request, "chart/charts.html", context)  
    
 
-def bccdc_cases_by_age_group_charts():
+def bccdc_cases_by_age_group_charts(request, end_date=None):
 
     l = []
     age_l = []
@@ -109,16 +109,17 @@ def bccdc_cases_by_age_group_charts():
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            l.append((row_data["Reported_Date"],row_data["Age_Group"]))
-            age_l.append(row_data["Age_Group"])
-            report_days.add(row_data["Reported_Date"])
-            year_week = bc_report_date_to_year_week(row_data["Reported_Date"])
-            if (year_week,row_data["Age_Group"]) not in data_x_y:
-                data_x_y[(year_week,row_data["Age_Group"])] = 0
-            data_x_y[(year_week,row_data["Age_Group"])] += 1 
-            if row_data["Age_Group"] not in age_groups_list:
-                age_groups_list[row_data["Age_Group"]] = 0 
-            age_groups_list[row_data["Age_Group"]] += 1 
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
+                l.append((row_data["Reported_Date"],row_data["Age_Group"]))
+                age_l.append(row_data["Age_Group"])
+                report_days.add(row_data["Reported_Date"])
+                year_week = bc_report_date_to_year_week(row_data["Reported_Date"])
+                if (year_week,row_data["Age_Group"]) not in data_x_y:
+                    data_x_y[(year_week,row_data["Age_Group"])] = 0
+                data_x_y[(year_week,row_data["Age_Group"])] += 1 
+                if row_data["Age_Group"] not in age_groups_list:
+                    age_groups_list[row_data["Age_Group"]] = 0 
+                age_groups_list[row_data["Age_Group"]] += 1 
 
     sorted_age_groups = sorted(age_groups_list.keys())
     report_weeks = set()
@@ -152,7 +153,8 @@ def bccdc_cases_by_age_group_charts():
         cases_per_day = []
         for day in sorted_report_days:
             if (day,age) in count:
-                cases_per_day.append(count[(day,age)])
+                cases_per_day.append({'value': count[(day,age)], 'xlink': { "href": request.build_absolute_uri(
+            '/bc_cases_by_age_group/' + day + '/'), "target": "_top"}})
             else:
                 cases_per_day.append(None)
         chart2.add(age, cases_per_day)
@@ -176,7 +178,11 @@ def bccdc_cases_by_age_group_charts():
             else:
                 timeseries_data.append(None)
         chart4.add({"title": age_group}, timeseries_data)
-    chart4.title = "BC Cases by Age Group in New Reported Week"
+    
+    year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
+    start_date_of_week = str(datetime.datetime.strptime(year_week_str+' 1', '%G %V %u'))[:10]
+    end_date_of_week = str(datetime.datetime.strptime(year_week_str+' 7', '%G %V %u'))[:10]    
+    chart4.title = "BC Cases by Age Group in New Reported Week\n{} - {}\n{}".format(start_date_of_week,end_date_of_week,sorted_report_days[-1])
     #chart4.x_labels = ["Age Group"]
     
     return [ chart2.render_data_uri(), chart1.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri() ]
@@ -261,7 +267,10 @@ def bccdc_cases_by_sex_charts():
             else:
                 timeseries_data.append(None)
         chart4.add({"title": sex}, timeseries_data)
-    chart4.title = "BC Cases by Sex in New Reported Week"
+    year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
+    start_date_of_week = str(datetime.datetime.strptime(year_week_str+' 1', '%G %V %u'))[:10]
+    end_date_of_week = str(datetime.datetime.strptime(year_week_str+' 7', '%G %V %u'))[:10] 
+    chart4.title = "BC Cases by Sex in New Reported Week\n{} - {}\n{}".format(start_date_of_week,end_date_of_week,sorted_report_days[-1])
     
     return [ chart2.render_data_uri(), chart1.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri() ]
     
@@ -362,7 +371,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
         
     chart3 = pygal.HorizontalBar(height=400,show_legend=True, show_x_labels=True, legend_at_bottom=True)
     last_report_week = sorted_report_weeks[-1]
-    for data in ["deaths", "cases"]:
+    for data in [ "deaths", "cases"]:
         timeseries_data = []
         for week in [ last_report_week ] :
             if (week,data) in data_x_y:
@@ -370,7 +379,11 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
             else:
                 timeseries_data.append(None)
         chart3.add({"title": data}, timeseries_data)
-    chart3.title = "{} Cases and Deaths in New Reported Week".format(ha)
+    
+    year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
+    start_date_of_week = str(datetime.datetime.strptime(year_week_str+' 1', '%G %V %u'))[:10]
+    end_date_of_week = str(datetime.datetime.strptime(year_week_str+' 7', '%G %V %u'))[:10]
+    chart3.title = "{} Cases and Deaths in New Reported Week\n{} - {}\n{}".format(ha, start_date_of_week,end_date_of_week,sorted_report_days[-1])
 
     return [ chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]    
 
@@ -519,7 +532,6 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
                 timeseries_data.append(data_x_y[(week,ha)])
             else:
                 timeseries_data.append(None)
-
         if end_date == None:
             chart3.add({"title": ha, 'xlink': { "href": request.build_absolute_uri(
             '/bc_ha_cases_and_mortality/' + ha + '/'), "target": "_top"}}, timeseries_data)
@@ -527,7 +539,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
             chart3.add({"title": ha, 'xlink': { "href": request.build_absolute_uri(
             '/bc_ha_cases_and_mortality/' + ha + '/' + end_date + '/'), "target": "_top"}}, timeseries_data)
     chart3.title = "BC Cases by Health Authority in New Reported Week\n{} - {}\n{}".format(start_date_of_week,end_date_of_week,sorted_report_days[-1])
-    chart3.x_labels = [ "deaths", "cases"]
+    chart3.x_labels = [   "deaths" , "cases" ]
     return [ chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
     
 def bccdc_cases_by_ha_charts(request, ha=None):

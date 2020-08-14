@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
    path("", views.home_view, name="home"),
    path("bc_cases_by_age_group/", views.bc_cases_by_age_group_view, name="bc_cases_by_age_group"),
+   path("bc_cases_by_age_group/<str:end_date>/", views.bc_cases_by_age_group_view, name="bc_cases_by_age_group"),
    path("bc_cases_by_sex/", views.bc_cases_by_sex_view, name="bc_cases_by_sex"),
    path("bc_cases_by_ha/", views.bc_cases_by_ha_view, name="bc_cases_by_ha"),
    path("bc_cases_and_mortality/", views.bc_cases_and_mortality_view, name="bc_cases_and_mortality"),
