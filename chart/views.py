@@ -585,8 +585,8 @@ def bccdc_cases_by_ha_charts(request, ha=None):
         report_weeks.add(week)
 
     sorted_report_weeks = sorted(report_weeks)
-    chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=True,
-    legend_at_bottom=False, x_title="Week number")
+    chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=False,
+    legend_at_bottom=True, x_title="Week number")
     for ha in sorted_has:
         timeseries_data = []
         for week in sorted_report_weeks:
@@ -604,7 +604,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
 
     sorted_report_days = sorted(report_days)
     chart2 = pygal.StackedBar(height=400,show_x_labels=True,x_label_rotation=0.01, 
-        show_legend=True,show_minor_x_labels=False)
+        show_legend=True,show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
         for day in sorted_report_days:
@@ -618,12 +618,12 @@ def bccdc_cases_by_ha_charts(request, ha=None):
     chart2.x_labels_major = [day for day in sorted_report_days if day[8:] == "01" ]
 
     
-    chart3 = pygal.HorizontalStackedBar(height=400, show_legend=True)
+    chart3 = pygal.HorizontalStackedBar(height=400, show_legend=True, legend_at_bottom=True)
     chart3.title = "Health Authority Total Cases Reported to Public Health"
     for ha in sorted_has:
         chart3.add(ha, [ ha_count[ha] ])
         
-    chart4 = pygal.Bar(height=400,show_legend=True)
+    chart4 = pygal.Bar(height=400,show_legend=True, legend_at_bottom=True)
     last_report_day = sorted_report_days[-1]
     for ha in sorted_has:
         cases_per_day = []
@@ -635,7 +635,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
         chart4.add(ha, cases_per_day)
     chart4.title = "New Cases Reported by Health Authority on {}".format(last_report_day)
     
-    chart4 = pygal.HorizontalStackedBar(height=400,show_legend=True, show_x_labels=True)
+    chart4 = pygal.HorizontalStackedBar(height=400,show_legend=True, show_x_labels=True, legend_at_bottom=True)
     last_report_week = sorted_report_weeks[-1]
     for ha in sorted_has:
         timeseries_data = []
@@ -645,7 +645,11 @@ def bccdc_cases_by_ha_charts(request, ha=None):
             else:
                 timeseries_data.append(None)
         chart4.add({"title": ha}, timeseries_data)
-    chart4.title = "Cases by Health Authority in New Reported Week"
+        
+    year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
+    start_date_of_week = str(datetime.datetime.strptime(year_week_str+' 1', '%G %V %u'))[:10]
+    end_date_of_week = str(datetime.datetime.strptime(year_week_str+' 7', '%G %V %u'))[:10]
+    chart4.title = "Cases by Health Authority in New Reported Week\n{} - {}\n{}".format(start_date_of_week,end_date_of_week,sorted_report_days[-1])
    
     return [ chart2.render_data_uri(), chart1.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri() ]
     
