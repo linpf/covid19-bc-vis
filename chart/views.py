@@ -472,34 +472,54 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
     chart4.x_labels = [ w[1] for w in sorted_report_weeks ] 
     
     data_x_y = {}
+    deaths_x_y = {}
     has_list = {}
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            year_week = bc_report_date_to_year_week(row_data["Reported_Date"])
-            if (year_week,row_data["HA"]) not in data_x_y:
-                data_x_y[(year_week,row_data["HA"])] = 0
-            data_x_y[(year_week,row_data["HA"])] += 1 
-            if row_data["HA"] not in has_list:
-                has_list[row_data["HA"]] = 0 
-            has_list[row_data["HA"]] += 1 
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
+                year_week = bc_report_date_to_year_week(row_data["Reported_Date"])
+                if (year_week,row_data["HA"]) not in data_x_y:
+                    data_x_y[(year_week,row_data["HA"])] = 0
+                data_x_y[(year_week,row_data["HA"])] += 1 
+                if row_data["HA"] not in has_list:
+                    has_list[row_data["HA"]] = 0 
+                has_list[row_data["HA"]] += 1 
             
+    with open("data/Covid19Canada/timeseries_hr/mortality_timeseries_hr.csv", 'r') as file:
+        csv_file = csv.DictReader(file)
+        for row in csv_file:
+            row_data = dict(row)
+            if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
+                if row_data["province"] == "BC":    
+                    year_week = report_date_to_year_week(row_data["date_death_report"])
+                    if (year_week,row_data["health_region"]) not in deaths_x_y:
+                        deaths_x_y[(year_week,row_data["health_region"])] = 0
+                    deaths_x_y[(year_week,row_data["health_region"])] += int(row_data["deaths"])
+       
+                    
     sorted_has = sorted(has_list.keys(),key=lambda ha : -has_list[ha])
     
-    chart3 = pygal.HorizontalStackedBar(height=400,show_legend=True, show_x_labels=True)
+    chart3 = pygal.HorizontalStackedBar(height=400,show_legend=True, show_x_labels=True, legend_at_bottom=True)
     last_report_week = sorted_report_weeks[-1]
     year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
     start_date_of_week = str(datetime.datetime.strptime(year_week_str+' 1', '%G %V %u'))[:10]
     end_date_of_week = str(datetime.datetime.strptime(year_week_str+' 7', '%G %V %u'))[:10]
     for ha in sorted_has:
         timeseries_data = []
-        for week in [ last_report_week ] :
+        hr = ha if ha != "Vancouver Island" else "Island" 
+        for week in [ last_report_week ]:
+            if (week,hr) in deaths_x_y:
+                timeseries_data.append(deaths_x_y[(week,hr)])
+            else:
+                timeseries_data.append(None)
             if (week,ha) in data_x_y:
                 timeseries_data.append(data_x_y[(week,ha)])
             else:
                 timeseries_data.append(None)
+
         if end_date == None:
             chart3.add({"title": ha, 'xlink': { "href": request.build_absolute_uri(
             '/bc_ha_cases_and_mortality/' + ha + '/'), "target": "_top"}}, timeseries_data)
@@ -507,7 +527,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
             chart3.add({"title": ha, 'xlink': { "href": request.build_absolute_uri(
             '/bc_ha_cases_and_mortality/' + ha + '/' + end_date + '/'), "target": "_top"}}, timeseries_data)
     chart3.title = "BC Cases by Health Authority in New Reported Week\n{} - {}\n{}".format(start_date_of_week,end_date_of_week,sorted_report_days[-1])
-
+    chart3.x_labels = [ "deaths", "cases"]
     return [ chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
     
 def bccdc_cases_by_ha_charts(request, ha=None):
