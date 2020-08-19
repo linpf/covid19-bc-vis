@@ -321,6 +321,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
             row_data = dict(row)
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
                 if row_data["health_region"] == hr and row_data["province"] == "BC":
+                    report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
                         row_data["date_death_report"])
                     if (year_week, "deaths") not in data_x_y:
@@ -446,6 +447,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
             row_data = dict(row)
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
                 if row_data["province"] == "BC":
+                    report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
                         row_data["date_death_report"])
                     if (year_week, "deaths") not in data_x_y:
@@ -666,22 +668,10 @@ def bccdc_cases_by_ha_charts(request, ha=None):
 
     chart3 = pygal.HorizontalStackedBar(
         height=400, show_legend=True, legend_at_bottom=True)
-    chart3.title = "Health Authority Total Cases Reported to Public Health"
+    chart3.title = "\nHealth Authority Total Cases Reported to Public Health\n"
     for ha in sorted_has:
         chart3.add(ha, [ha_count[ha]])
 
-    chart4 = pygal.Bar(height=400, show_legend=True, legend_at_bottom=True)
-    last_report_day = sorted_report_days[-1]
-    for ha in sorted_has:
-        cases_per_day = []
-        for day in [last_report_day]:
-            if (day, ha) in count:
-                cases_per_day.append(count[(day, ha)])
-            else:
-                cases_per_day.append(None)
-        chart4.add(ha, cases_per_day)
-    chart4.title = "New Cases Reported by Health Authority on {}".format(
-        last_report_day)
 
     chart4 = pygal.HorizontalStackedBar(
         height=400, show_legend=True, show_x_labels=True, legend_at_bottom=True)

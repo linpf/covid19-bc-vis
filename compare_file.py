@@ -38,7 +38,7 @@ def scheduled_job():
         with open('data/Covid19Canada/' + csv_file, 'rb') as f:
             file_size =  len(f.read())
             print(len(r.content),file_size)
-            file_bigger = len(r.content) > file_size
+            file_bigger = len(r.content) != file_size
         if file_bigger:
             with open('data/Covid19Canada/' + csv_file, 'wb') as f:
                 f.write(r.content)
