@@ -116,12 +116,12 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or from_new_report_format(row_data["Reported_Date"]) <= end_date):
-                l.append((from_new_report_format(row_data["Reported_Date"]), row_data["Age_Group"]))
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
+                l.append((row_data["Reported_Date"], row_data["Age_Group"]))
                 age_l.append(row_data["Age_Group"])
-                report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                report_days.add(row_data["Reported_Date"])
                 year_week = bc_report_date_to_year_week(
-                    from_new_report_format(row_data["Reported_Date"]))
+                    row_data["Reported_Date"])
                 if (year_week, row_data["Age_Group"]) not in data_x_y:
                     data_x_y[(year_week, row_data["Age_Group"])] = 0
                 data_x_y[(year_week, row_data["Age_Group"])] += 1
@@ -212,10 +212,10 @@ def bccdc_cases_by_sex_charts():
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            l.append((from_new_report_format(row_data["Reported_Date"]), row_data["Sex"]))
+            l.append((row_data["Reported_Date"], row_data["Sex"]))
             sex_l.append(row_data["Sex"])
-            report_days.add(from_new_report_format(row_data["Reported_Date"]))
-            year_week = bc_report_date_to_year_week(from_new_report_format(row_data["Reported_Date"]))
+            report_days.add(row_data["Reported_Date"])
+            year_week = bc_report_date_to_year_week(row_data["Reported_Date"])
             if (year_week, row_data["Sex"]) not in data_x_y:
                 data_x_y[(year_week, row_data["Sex"])] = 0
             data_x_y[(year_week, row_data["Sex"])] += 1
@@ -302,13 +302,13 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or from_new_report_format(row_data["Reported_Date"]) <= end_date):
-                report_days.add(from_new_report_format(row_data["Reported_Date"]))
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
+                report_days.add(row_data["Reported_Date"])
                 if row_data["HA"] == ha:
-                    l.append((from_new_report_format(row_data["Reported_Date"]), "cases"))
+                    l.append((row_data["Reported_Date"], "cases"))
                     
                     year_week = bc_report_date_to_year_week(
-                        from_new_report_format(row_data["Reported_Date"]))
+                        row_data["Reported_Date"])
                     if (year_week, "cases") not in data_x_y:
                         data_x_y[(year_week, "cases")] = 0
                     data_x_y[(year_week, "cases")] += 1
@@ -431,11 +431,11 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or from_new_report_format(row_data["Reported_Date"]) <= end_date):
-                l.append((from_new_report_format(row_data["Reported_Date"]), "cases"))
-                report_days.add(from_new_report_format(row_data["Reported_Date"]))
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
+                l.append((row_data["Reported_Date"], "cases"))
+                report_days.add(row_data["Reported_Date"])
                 year_week = bc_report_date_to_year_week(
-                    from_new_report_format(row_data["Reported_Date"]))
+                    row_data["Reported_Date"])
                 if (year_week, "cases") not in data_x_y:
                     data_x_y[(year_week, "cases")] = 0
                 data_x_y[(year_week, "cases")] += 1
@@ -532,9 +532,9 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or from_new_report_format(row_data["Reported_Date"]) <= end_date):
+            if (end_date == None or row_data["Reported_Date"] <= end_date):
                 year_week = bc_report_date_to_year_week(
-                    from_new_report_format(row_data["Reported_Date"]))
+                    row_data["Reported_Date"])
                 if (year_week, row_data["HA"]) not in data_x_y:
                     data_x_y[(year_week, row_data["HA"])] = 0
                 data_x_y[(year_week, row_data["HA"])] += 1
@@ -602,11 +602,11 @@ def bccdc_cases_by_ha_charts(request, ha=None):
         for row in csv_file:
             row_data = dict(row)
             if ha == None:
-                l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                l.append((row_data["Reported_Date"], row_data["HA"]))
                 ha_l.append(row_data["HA"])
-                report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                report_days.add(row_data["Reported_Date"])
                 year_week = bc_report_date_to_year_week(
-                    from_new_report_format(row_data["Reported_Date"]))
+                    row_data["Reported_Date"])
                 if (year_week, row_data["HA"]) not in data_x_y:
                     data_x_y[(year_week, row_data["HA"])] = 0
                 data_x_y[(year_week, row_data["HA"])] += 1
@@ -614,11 +614,11 @@ def bccdc_cases_by_ha_charts(request, ha=None):
                     has_list[row_data["HA"]] = 0
                 has_list[row_data["HA"]] += 1
             elif row_data["HA"] == ha:
-                l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                l.append((row_data["Reported_Date"], row_data["HA"]))
                 ha_l.append(row_data["HA"])
-                report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                report_days.add(row_data["Reported_Date"])
                 year_week = bc_report_date_to_year_week(
-                    from_new_report_format(row_data["Reported_Date"]))
+                    row_data["Reported_Date"])
                 if (year_week, row_data["HA"]) not in data_x_y:
                     data_x_y[(year_week, row_data["HA"])] = 0
                 data_x_y[(year_week, row_data["HA"])] += 1
@@ -750,25 +750,25 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if ((start_date == None or from_new_report_format(row_data["Reported_Date"]) >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
+            if ((start_date == None or row_data["Reported_Date"] >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
                 if ha == None or ha == "HA":
-                    l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                    l.append((row_data["Reported_Date"], row_data["HA"]))
                     ha_l.append(row_data["HA"])
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
                 elif ha == "BC":
-                    l.append((from_new_report_format(row_data["Reported_Date"]), "BC"))
+                    l.append((row_data["Reported_Date"], "BC"))
                     ha_l.append("BC")
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if "BC" not in has_list:
                         has_list["BC"] = 0
                     has_list["BC"] += 1
                 elif row_data["HA"] == ha:
-                    l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                    l.append((row_data["Reported_Date"], row_data["HA"]))
                     ha_l.append(row_data["HA"])
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
@@ -924,25 +924,25 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if ((start_date == None or from_new_report_format(row_data["Reported_Date"]) >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
+            if ((start_date == None or row_data["Reported_Date"] >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
                 if ha == None or ha == "HA":
-                    l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                    l.append((row_data["Reported_Date"], row_data["HA"]))
                     ha_l.append(row_data["HA"])
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
                 elif ha == "BC":
-                    l.append((from_new_report_format(row_data["Reported_Date"]), "BC"))
+                    l.append((row_data["Reported_Date"], "BC"))
                     ha_l.append("BC")
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if "BC" not in has_list:
                         has_list["BC"] = 0
                     has_list["BC"] += 1
                 elif row_data["HA"] == ha:
-                    l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
+                    l.append((row_data["Reported_Date"], row_data["HA"]))
                     ha_l.append(row_data["HA"])
-                    report_days.add(from_new_report_format(row_data["Reported_Date"]))
+                    report_days.add(row_data["Reported_Date"])
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
