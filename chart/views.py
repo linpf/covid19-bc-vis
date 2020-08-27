@@ -702,10 +702,10 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     region_list = {}
     report_days = set()
     new_tests = {}
-    positivity = {}
-    turn_around = {}
     region = ha
     total_tests = {}
+    new_tests_by_week = {}
+    
     with open("data/BCCDC_COVID19_Dashboard_Lab_Information.csv", 'r') as file:
         csv_file = csv.DictReader(file)
         for row in csv_file:
@@ -720,12 +720,13 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
                                     ] += int(row_data["New_Tests"])
                         new_tests[(row_data["Date"], row_data["Region"])] = int(
                             row_data["New_Tests"])
-                        positivity[(row_data["Date"], row_data["Region"])] = float(
-                            row_data["Positivity"])
-                        turn_around[(row_data["Date"], row_data["Region"])] = float(
-                            row_data["Turn_Around"])
                         total_tests[(row_data["Date"], row_data["Region"])] = int(
                             row_data["Total_Tests"])
+                            
+                        year_week = bc_report_date_to_year_week(row_data["Date"])
+                        new_tests_by_week[(year_week, row_data["Region"])] = int(
+                            row_data["New_Tests"]) + new_tests_by_week.get((year_week, row_data["Region"]),0)
+                            
                 else:
                     if row_data["Region"] == region:
                         report_days.add(row_data["Date"])
@@ -735,16 +736,18 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
                                     ] += int(row_data["New_Tests"])
                         new_tests[(row_data["Date"], row_data["Region"])] = int(
                             row_data["New_Tests"])
-                        positivity[(row_data["Date"], row_data["Region"])] = float(
-                            row_data["Positivity"])
-                        turn_around[(row_data["Date"], row_data["Region"])] = float(
-                            row_data["Turn_Around"])
                         total_tests[(row_data["Date"], row_data["Region"])] = int(
                             row_data["Total_Tests"])
+                        
+                        year_week = bc_report_date_to_year_week(row_data["Date"])
+                        new_tests_by_week[(year_week, row_data["Region"])] = int(
+                            row_data["New_Tests"]) + new_tests_by_week.get((year_week, row_data["Region"]),0)
 
     l = []
     ha_l = []
     has_list = {}
+    data_x_y = {}
+    new_cases_by_week = {}
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
@@ -758,6 +761,14 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
+                    
+                    year_week = bc_report_date_to_year_week(
+                        from_new_report_format(row_data["Reported_Date"]))
+                    if (year_week, row_data["HA"]) not in new_cases_by_week:
+                        new_cases_by_week[(year_week, row_data["HA"])] = 0
+                    new_cases_by_week[(year_week, row_data["HA"])] += 1
+                    
+                    
                 elif ha == "BC":
                     l.append((from_new_report_format(row_data["Reported_Date"]), "BC"))
                     ha_l.append("BC")
@@ -765,6 +776,13 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
                     if "BC" not in has_list:
                         has_list["BC"] = 0
                     has_list["BC"] += 1
+                    
+                    year_week = bc_report_date_to_year_week(
+                        from_new_report_format(row_data["Reported_Date"]))
+                    if (year_week, "BC") not in new_cases_by_week:
+                        new_cases_by_week[(year_week, "BC")] = 0
+                    new_cases_by_week[(year_week, "BC")] += 1
+                    
                 elif row_data["HA"] == ha:
                     l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
                     ha_l.append(row_data["HA"])
@@ -772,13 +790,20 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
                     if row_data["HA"] not in has_list:
                         has_list[row_data["HA"]] = 0
                     has_list[row_data["HA"]] += 1
-
+                    
+                    year_week = bc_report_date_to_year_week(
+                        from_new_report_format(row_data["Reported_Date"]))
+                    if (year_week, row_data["HA"]) not in new_cases_by_week:
+                        new_cases_by_week[(year_week, row_data["HA"])] = 0
+                    new_cases_by_week[(year_week, row_data["HA"])] += 1
+                    
+                
     sorted_regions = sorted(
         region_list.keys(), key=lambda ha: -region_list[ha])
 
     sorted_report_days = sorted(report_days)
     chart1 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                              show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                              show_legend=False, show_minor_x_labels=False, legend_at_bottom=True)
 
     for ha in sorted_regions:
         lab_info_per_day = []
@@ -795,14 +820,35 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     chart1.x_labels = sorted_report_days
     chart1.x_labels_major = [
         day for day in sorted_report_days if day[8:] == "01"]
+        
+    report_weeks = set()
+    for key in new_tests_by_week:
+        week = key[0]
+        report_weeks.add(week)
+    
+    sorted_report_weeks = sorted(report_weeks)
+    chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=True,
+                              legend_at_bottom=True, x_title="Week number")
+    for ha in sorted_regions:
+        timeseries_data = []
+        for week in sorted_report_weeks:
+            if (week, ha) in new_tests_by_week:
+                timeseries_data.append(new_tests_by_week[(week, ha)])
+            else:
+                timeseries_data.append(None)
+        chart1.add({"title": ha}, timeseries_data)
 
+    chart1.title = "{} New Laboratory Tests Performed".format(
+        region if region != 'HA' else '')
+    chart1.x_labels = [w[1] for w in sorted_report_weeks]
+    
     sorted_has = sorted(has_list.keys(), key=lambda ha: -
                         region_list.get(ha, 0))
     count = Counter(l)
 
     sorted_report_days = sorted(report_days)
     chart3 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                              show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                              show_legend=False, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
         for day in sorted_report_days:
@@ -817,7 +863,27 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     chart3.x_labels = sorted_report_days
     chart3.x_labels_major = [
         day for day in sorted_report_days if day[8:] == "01"]
+        
+    report_weeks = set()
+    for key in new_cases_by_week:
+        week = key[0]
+        report_weeks.add(week)
+    
+    sorted_report_weeks = sorted(report_weeks)
+    chart3 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=True,
+                              legend_at_bottom=True, x_title="Week number")
+    for ha in sorted_has:
+        timeseries_data = []
+        for week in sorted_report_weeks:
+            if (week, ha) in new_cases_by_week:
+                timeseries_data.append(new_cases_by_week[(week, ha)])
+            else:
+                timeseries_data.append(None)
+        chart3.add({"title": ha}, timeseries_data)
 
+    chart3.title = "Health Authority Cases Reported to Public Health by Week"
+    chart3.x_labels = [w[1] for w in sorted_report_weeks]
+    
     sorted_report_days = sorted(report_days)
     chart2 = pygal.Line(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=2,
                         show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
@@ -924,7 +990,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if ((start_date == None or from_new_report_format(row_data["Reported_Date"]) >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
+            if ((start_date == None or from_new_report_format(row_data["Reported_Date"]) >= start_date) and (end_date == None or from_new_report_format(row_data["Reported_Date"]) <= end_date)):
                 if ha == None or ha == "HA":
                     l.append((from_new_report_format(row_data["Reported_Date"]), row_data["HA"]))
                     ha_l.append(row_data["HA"])
