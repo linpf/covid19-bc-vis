@@ -34,14 +34,15 @@
                 BC
               </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'bc_cases_and_mortality' %}">Cases and Mortality in BC</a>
+                <!--<a class="dropdown-item" href="{% url 'bc_cases_and_mortality' %}">Cases and Mortality in BC</a>-->
                 <a class="dropdown-item" href="{% url 'bc_cases_and_testing_by_ha' 'BC' %}">Cases and Testing in BC</a>
-                <a class="dropdown-item" href="{% url 'bc_cases_and_testing_by_ha' 'HA' %}">Cases and Testing by HA</a>
-                <a class="dropdown-item" href="{% url 'bc_lab_tests' 'BC' %}">Lab Test Information</a>
+                <a class="dropdown-item" href="{% url 'bc_lab_tests' 'BC' %}">Lab Test Information in BC</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="{% url 'bc_cases_by_age_group' %}">Cases distribution by Age Group</a>
                 <a class="dropdown-item" href="{% url 'bc_cases_by_sex' %}">Cases distribution by Sex</a>
+                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="{% url 'bc_cases_by_ha' %}">Cases distribution by HA</a>
+                <a class="dropdown-item" href="{% url 'bc_cases_and_testing_by_ha' 'HA' %}">Cases and Testing by HA</a>
               </div>
             </div>
             
