@@ -48,9 +48,9 @@ def bc_cases_by_ha_view(request):
 
 
 @cache_page(60 * 15)
-def bc_cases_and_mortality_view(request, end_date=None):
+def bc_cases_and_mortality_view(request, start_date=None, end_date=None):
 
-    charts = bccdc_cases_and_mortality_charts(request, end_date)
+    charts = bccdc_cases_and_mortality_charts(request, start_date, end_date)
     context = {
         "charts": charts,
     }
@@ -421,7 +421,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
     return [chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
 
 
-def bccdc_cases_and_mortality_charts(request, end_date=None):
+def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     l = []
     data_x_y = {}
@@ -431,7 +431,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or row_data["Reported_Date"] <= end_date):
+            if (end_date == None or row_data["Reported_Date"] <= end_date) and (start_date == None or row_data["Reported_Date"] >= start_date):
                 l.append((row_data["Reported_Date"], "cases"))
                 report_days.add(row_data["Reported_Date"])
                 year_week = bc_report_date_to_year_week(
@@ -446,7 +446,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
+            if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date) and (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["province"] == "BC":
                     #report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
@@ -461,7 +461,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or row_data["Date"] <= end_date):
+            if (end_date == None or row_data["Date"] <= end_date) and (start_date == None or row_data["Date"] >= start_date):
                 if row_data["Region"] == "BC":
                     year_week = bc_report_date_to_year_week(row_data["Date"])
                     if (year_week, "testing") not in data_x_y:
@@ -477,7 +477,7 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         for day in sorted_report_days:
             if (day, data) in count:
                 cases_per_day.append({"value": count[(day, data)], 'xlink': {"href": request.build_absolute_uri(
-                    '/bc_cases_and_mortality/' + day + '/'), "target": "_top"}})
+                        '/bc_cases_and_mortality/' + day + '/'), "target": "_top"}})
             else:
                 cases_per_day.append(None)
         chart1.add(data, cases_per_day)
@@ -492,13 +492,20 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         report_weeks.add(week)
 
     sorted_report_weeks = sorted(report_weeks)
+    
+    #print(sorted_report_weeks)
     chart2 = pygal.Bar(height=400, show_x_labels=True, show_legend=True,
                        legend_at_bottom=True, x_title="Week number")
+                       
     for data in ["deaths", "cases"]:
         timeseries_data = []
         for week in sorted_report_weeks:
             if (week, data) in data_x_y:
-                timeseries_data.append(data_x_y[(week, data)])
+                year_week_str = str(week[0]) + ' ' + str(week[1])
+                end_date_of_week = str(datetime.datetime.strptime(
+                year_week_str+' 7', '%G %V %u'))[:10]
+                timeseries_data.append({"value": data_x_y[(week, data)], 'xlink': {"href": request.build_absolute_uri(
+                    '/bc_cases_and_mortality/' + end_date_of_week + '/'), "target": "_top"}})
             else:
                 timeseries_data.append(None)
         chart2.add({"title": data}, timeseries_data)
@@ -512,7 +519,12 @@ def bccdc_cases_and_mortality_charts(request, end_date=None):
         timeseries_data = []
         for week in sorted_report_weeks:
             if (week, data) in data_x_y:
-                timeseries_data.append(data_x_y[(week, data)])
+                year_week_str = str(week[0]) + ' ' + str(week[1])
+                end_date_of_week = str(datetime.datetime.strptime(
+                year_week_str+' 7', '%G %V %u'))[:10]
+                timeseries_data.append({"value": data_x_y[(week, data)], 'xlink': {"href": request.build_absolute_uri(
+                    '/bc_cases_and_mortality/' + end_date_of_week + '/'), "target": "_top"}})
+                #timeseries_data.append(data_x_y[(week, data)])
             else:
                 timeseries_data.append(None)
         if data == "testing":
