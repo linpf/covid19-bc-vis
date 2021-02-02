@@ -448,7 +448,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
             row_data = dict(row)
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date) and (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["province"] == "BC":
-                    #report_days.add(bc_report_day(row_data["date_death_report"]))
+                    report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
                         row_data["date_death_report"])
                     if (year_week, "deaths") not in data_x_y:
