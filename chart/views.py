@@ -10,7 +10,7 @@ import datetime
 @cache_page(60 * 15)
 def home_view(request):
 
-    return bc_cases_and_mortality_view(request)
+    return bc_cases_and_mortality_view(request, start_date="2020-04-01")
 
 
 @cache_page(60 * 15)
@@ -40,6 +40,16 @@ def bc_cases_by_sex_view(request):
 def bc_cases_by_ha_view(request):
 
     charts = bccdc_cases_by_ha_charts(request)
+    context = {
+        "charts": charts,
+    }
+
+    return render(request, "chart/charts.html", context)
+
+@cache_page(60 * 15)
+def bc_cases_by_hsda_view(request, ha=None):
+
+    charts = bccdc_cases_by_hsda_charts(request, ha)
     context = {
         "charts": charts,
     }
@@ -292,7 +302,7 @@ def bccdc_cases_by_sex_charts():
     return [chart2.render_data_uri(), chart1.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
 
 
-def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
+def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
 
     l = []
     data_x_y = {}
@@ -302,7 +312,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or row_data["Reported_Date"] <= end_date):
+            if (start_date == None or row_data["Reported_Date"] >= start_date):
                 report_days.add(row_data["Reported_Date"])
                 if row_data["HA"] == ha:
                     l.append((row_data["Reported_Date"], "cases"))
@@ -320,9 +330,9 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
+            if (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["health_region"] == hr and row_data["province"] == "BC":
-                    report_days.add(bc_report_day(row_data["date_death_report"]))
+                    #report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
                         row_data["date_death_report"])
                     if (year_week, "deaths") not in data_x_y:
@@ -335,7 +345,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
         csv_file = csv.DictReader(file)
         for row in csv_file:
             row_data = dict(row)
-            if (end_date == None or row_data["Date"] <= end_date):
+            if (start_date == None or row_data["Date"] >= start_date):
                 if row_data["Region"] == ha:
                     year_week = bc_report_date_to_year_week(row_data["Date"])
                     if (year_week, "testing") not in data_x_y:
@@ -392,7 +402,11 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, end_date=None):
             chart4.add({"title": data, 'xlink': {"href": request.build_absolute_uri(
                 '/bc_lab_tests_before/' + ha + '/' + day + '/'), "target": "_top"}}, timeseries_data)
         else:
-            chart4.add({"title": data}, timeseries_data)
+            chart4.add({"title": data, 'xlink': {"href": request.build_absolute_uri(
+                '/bc_cases_by_hsda/' + ha + '/'), "target": "_top"}}, timeseries_data)
+            #chart4.add({"title": data}, timeseries_data)
+            #pass
+            
         #chart4.add({"title": data}, timeseries_data)
 
     chart4.title = "{} Cases and Testing by Week".format(ha)
@@ -448,7 +462,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
             row_data = dict(row)
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date) and (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["province"] == "BC":
-                    report_days.add(bc_report_day(row_data["date_death_report"]))
+                    #report_days.add(bc_report_day(row_data["date_death_report"]))
                     year_week = report_date_to_year_week(
                         row_data["date_death_report"])
                     if (year_week, "deaths") not in data_x_y:
@@ -589,16 +603,136 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
                 timeseries_data.append(data_x_y[(week, ha)])
             else:
                 timeseries_data.append(None)
-        if end_date == None:
+        if start_date == None:
             chart3.add({"title": ha, 'xlink': {"href": request.build_absolute_uri(
                 '/bc_ha_cases_and_mortality/' + ha + '/'), "target": "_top"}}, timeseries_data)
         else:
             chart3.add({"title": ha, 'xlink': {"href": request.build_absolute_uri(
-                '/bc_ha_cases_and_mortality/' + ha + '/' + end_date + '/'), "target": "_top"}}, timeseries_data)
+                '/bc_ha_cases_and_mortality/' + ha + '/' + start_date + '/'), "target": "_top"}}, timeseries_data)
     chart3.title = "BC Cases by Health Authority in New Reported Week\n{} - {}\n{}".format(
         start_date_of_week, end_date_of_week, sorted_report_days[-1])
     chart3.x_labels = ["deaths", "cases"]
     return [chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
+
+
+def bccdc_cases_by_hsda_charts(request, ha=None):
+
+    l = []
+    ha_l = []
+    count = {}
+    ha_count = {}
+    data_x_y = {}
+    has_list = {}
+    report_days = set()
+
+    with open("data/BCCDC_COVID19_Regional_Summary_Data.csv", 'r') as file:
+        csv_file = csv.DictReader(file)
+        for row in csv_file:
+            row_data = dict(row)
+            if ha == None:
+                if row_data["HSDA"] != "All":
+                    count[(row_data["Date"], row_data["HSDA"])] = int(row_data["Cases_Reported"])
+                    if row_data["HSDA"] not in ha_count:
+                        ha_count[row_data["HSDA"]] = 0
+                    ha_count[row_data["HSDA"]] += int(row_data["Cases_Reported"])
+                    report_days.add(row_data["Date"])
+                    year_week = bc_report_date_to_year_week(
+                        row_data["Date"])
+                    if (year_week, row_data["HSDA"]) not in data_x_y:
+                        data_x_y[(year_week, row_data["HSDA"])] = 0
+                    data_x_y[(year_week, row_data["HSDA"])] += int(row_data["Cases_Reported"])
+                    if row_data["HSDA"] not in has_list:
+                        has_list[row_data["HSDA"]] = 0
+                    has_list[row_data["HSDA"]] += int(row_data["Cases_Reported"])
+            elif row_data["HA"] == ha or ha == row_data["HSDA"]:
+                if row_data["HSDA"] != "All":
+                    count[(row_data["Date"], row_data["HSDA"])] = int(row_data["Cases_Reported"])
+                    if row_data["HSDA"] not in ha_count:
+                        ha_count[row_data["HSDA"]] = 0
+                    ha_count[row_data["HSDA"]] += int(row_data["Cases_Reported"])
+                    report_days.add(row_data["Date"])
+                    year_week = bc_report_date_to_year_week(
+                        row_data["Date"])
+                    if (year_week, row_data["HSDA"]) not in data_x_y:
+                        data_x_y[(year_week, row_data["HSDA"])] = 0
+                    data_x_y[(year_week, row_data["HSDA"])] += int(row_data["Cases_Reported"])
+                    if row_data["HSDA"] not in has_list:
+                        has_list[row_data["HSDA"]] = 0
+                    has_list[row_data["HSDA"]] += int(row_data["Cases_Reported"])
+
+    
+    sorted_has = sorted(has_list.keys(), key=lambda ha: -has_list[ha])
+
+    report_weeks = set()
+    for key in data_x_y:
+        week = key[0]
+        report_weeks.add(week)
+
+    sorted_report_weeks = sorted(report_weeks)
+    chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=False,
+                              legend_at_bottom=True, x_title="Week number")
+    for ha in sorted_has:
+        timeseries_data = []
+        for week in sorted_report_weeks:
+            if (week, ha) in data_x_y:
+                timeseries_data.append(data_x_y[(week, ha)])
+            else:
+                timeseries_data.append(None)
+        chart1.add({"title": ha}, timeseries_data)
+
+    chart1.title = "Health Service Delivery Area (HSDA) Cases Reported to Public Health by Week"
+    chart1.x_labels = [w[1] for w in sorted_report_weeks]
+
+
+
+    sorted_report_days = sorted(report_days)
+    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
+                              show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+    for ha in sorted_has:
+        cases_per_day = []
+        for day in sorted_report_days:
+            if (day, ha) in count:
+                cases_per_day.append(count[(day, ha)])
+            else:
+                cases_per_day.append(None)
+        #chart2.add(ha, cases_per_day)
+        chart2.add({"title": ha, 'xlink': {"href": request.build_absolute_uri(
+                '/bc_cases_by_hsda/' + ha + '/'), "target": "_top"}}, cases_per_day)
+        
+        
+    chart2.title = " Health Service Delivery Area (HSDA) Cases Reported to Public Health by Day"
+    chart2.x_labels = sorted_report_days
+    chart2.x_labels_major = [
+        day for day in sorted_report_days if day[8:] == "01"]
+
+    chart3 = pygal.HorizontalStackedBar(
+        height=400, show_legend=True, legend_at_bottom=True)
+    chart3.title = "\nHealth Service Delivery Area (HSDA) Total Cases Reported to Public Health\n"
+    for ha in sorted_has:
+        chart3.add(ha, [ha_count[ha]])
+
+
+    chart4 = pygal.HorizontalStackedBar(
+        height=400, show_legend=True, show_x_labels=True, legend_at_bottom=True)
+    last_report_week = sorted_report_weeks[-1]
+    for ha in sorted_has:
+        timeseries_data = []
+        for week in [last_report_week]:
+            if (week, ha) in data_x_y:
+                timeseries_data.append(data_x_y[(week, ha)])
+            else:
+                timeseries_data.append(None)
+        chart4.add({"title": ha}, timeseries_data)
+
+    year_week_str = str(last_report_week[0]) + ' ' + str(last_report_week[1])
+    start_date_of_week = str(datetime.datetime.strptime(
+        year_week_str+' 1', '%G %V %u'))[:10]
+    end_date_of_week = str(datetime.datetime.strptime(
+        year_week_str+' 7', '%G %V %u'))[:10]
+    chart4.title = "Cases by Health Service Delivery Area (HSDA) in New Reported Week\n{} - {}\n{}".format(
+        start_date_of_week, end_date_of_week, sorted_report_days[-1])
+
+    return [chart2.render_data_uri(), chart1.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
 
 
 def bccdc_cases_by_ha_charts(request, ha=None):
@@ -664,7 +798,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
     ha_count = Counter(ha_l)
 
     sorted_report_days = sorted(report_days)
-    chart2 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
                               show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []

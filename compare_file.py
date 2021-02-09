@@ -3,7 +3,7 @@ import os
 
 def scheduled_job():
 
-    os.chdir("/home/peter/covid19-bc-vis")
+    os.chdir(os.path.expanduser("~/covid19-bc-vis"))
 
     file_bigger = False 
     url = 'http://www.bccdc.ca/Health-Info-Site/Documents/BCCDC_COVID19_Dashboard_Case_Details.csv'
@@ -27,6 +27,18 @@ def scheduled_job():
 
     if file_bigger: 
         with open('data/BCCDC_COVID19_Dashboard_Lab_Information.csv', 'wb') as f:
+            f.write(r.content)
+
+    file_bigger = False 
+    url = 'http://www.bccdc.ca/Health-Info-Site/Documents/BCCDC_COVID19_Regional_Summary_Data.csv'
+    r = requests.get(url)
+    with open('data/BCCDC_COVID19_Regional_Summary_Data.csv', 'rb') as f:
+        file_size =  len(f.read())
+        print(len(r.content),file_size)
+        file_bigger = len(r.content) > file_size
+
+    if file_bigger: 
+        with open('data/BCCDC_COVID19_Regional_Summary_Data.csv', 'wb') as f:
             f.write(r.content)
 
     files_list = [ "timeseries_prov/mortality_timeseries_prov.csv", "timeseries_hr/mortality_timeseries_hr.csv" ]
