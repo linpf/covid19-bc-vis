@@ -695,9 +695,8 @@ def bccdc_cases_by_hsda_charts(request, ha=None):
                 cases_per_day.append(count[(day, ha)])
             else:
                 cases_per_day.append(None)
-        #chart2.add(ha, cases_per_day)
-        chart2.add({"title": ha, 'xlink': {"href": request.build_absolute_uri(
-                '/bc_cases_by_hsda/' + ha + '/'), "target": "_top"}}, cases_per_day)
+        chart2.add(ha, cases_per_day)
+
         
         
     chart2.title = " Health Service Delivery Area (HSDA) Cases Reported to Public Health by Day"
@@ -817,8 +816,9 @@ def bccdc_cases_by_ha_charts(request, ha=None):
         height=400, show_legend=True, legend_at_bottom=True)
     chart3.title = "\nHealth Authority Total Cases Reported to Public Health\n"
     for ha in sorted_has:
-        chart3.add(ha, [ha_count[ha]])
-
+        #chart3.add(ha, [ha_count[ha]])
+        chart3.add({"title": ha, 'xlink': {"href": request.build_absolute_uri(
+                '/bc_cases_by_hsda/' + ha + '/'), "target": "_top"}}, [ha_count[ha]])
 
     chart4 = pygal.HorizontalStackedBar(
         height=400, show_legend=True, show_x_labels=True, legend_at_bottom=True)
