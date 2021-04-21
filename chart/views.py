@@ -124,8 +124,7 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or row_data["Reported_Date"] <= end_date):
                 l.append((row_data["Reported_Date"], row_data["Age_Group"]))
                 age_l.append(row_data["Age_Group"])
@@ -148,6 +147,7 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
     sorted_report_weeks = sorted(report_weeks)
     chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=False,
                               legend_at_bottom=False, x_title="Week number")
+                             
     for age_group in sorted_age_groups:
         timeseries_data = []
         for week in sorted_report_weeks:
@@ -166,7 +166,7 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
     sorted_age = sorted(age_count.keys())
     sorted_report_days = sorted(report_days)
     chart2 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                              show_legend=False, show_minor_x_labels=False)
+                              show_legend=True, show_minor_x_labels=False)
     for age in sorted_age:
         cases_per_day = []
         for day in sorted_report_days:
@@ -179,7 +179,7 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
     chart2.title = "Daily Cases by Age Group"
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"] ]
 
     chart3 = pygal.HorizontalBar(
         height=400, show_x_labels=True, show_legend=True)
@@ -220,8 +220,7 @@ def bccdc_cases_by_sex_charts():
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             l.append((row_data["Reported_Date"], row_data["Sex"]))
             sex_l.append(row_data["Sex"])
             report_days.add(row_data["Reported_Date"])
@@ -242,7 +241,8 @@ def bccdc_cases_by_sex_charts():
 
     sorted_report_weeks = sorted(report_weeks)
     chart1 = pygal.StackedBar(height=400, show_x_labels=True, show_legend=True,
-                              legend_at_bottom=False, x_title="Week number")
+                              legend_at_bottom = False, 
+                              x_title="Week number")
     for sex in sorted_sexs:
         timeseries_data = []
         for week in sorted_report_weeks:
@@ -274,7 +274,7 @@ def bccdc_cases_by_sex_charts():
     chart2.title = "Daily Cases by Sex"
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart3 = pygal.Pie(height=400, show_x_labels=True, show_legend=True)
     for sex in sorted_sex:
@@ -310,8 +310,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (start_date == None or row_data["Reported_Date"] >= start_date):
                 report_days.add(row_data["Reported_Date"])
                 if row_data["HA"] == ha:
@@ -328,8 +327,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
     hr = ha if ha != "Vancouver Island" else "Island"
     with open("data/Covid19Canada/timeseries_hr/mortality_timeseries_hr.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["health_region"] == hr and row_data["province"] == "BC":
                     #report_days.add(bc_report_day(row_data["date_death_report"]))
@@ -343,8 +341,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Lab_Information.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (start_date == None or row_data["Date"] >= start_date):
                 if row_data["Region"] == ha:
                     year_week = bc_report_date_to_year_week(row_data["Date"])
@@ -367,7 +364,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
     chart1.title = "{} Cases and Deaths by Day".format(ha)
     chart1.x_labels = sorted_report_days
     chart1.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     report_weeks = set()
     for key in data_x_y:
@@ -443,8 +440,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or row_data["Reported_Date"] <= end_date) and (start_date == None or row_data["Reported_Date"] >= start_date):
                 l.append((row_data["Reported_Date"], "cases"))
                 report_days.add(row_data["Reported_Date"])
@@ -458,8 +454,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     with open("data/Covid19Canada/timeseries_prov/mortality_timeseries_prov.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date) and (start_date == None or bc_report_day(row_data["date_death_report"]) >= start_date):
                 if row_data["province"] == "BC":
                     #report_days.add(bc_report_day(row_data["date_death_report"]))
@@ -473,8 +468,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Lab_Information.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or row_data["Date"] <= end_date) and (start_date == None or row_data["Date"] >= start_date):
                 if row_data["Region"] == "BC":
                     year_week = bc_report_date_to_year_week(row_data["Date"])
@@ -498,7 +492,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
     chart1.title = "BC Cases and Deaths by Day"
     chart1.x_labels = sorted_report_days
     chart1.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     report_weeks = set()
     for key in data_x_y:
@@ -556,8 +550,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or row_data["Reported_Date"] <= end_date):
                 year_week = bc_report_date_to_year_week(
                     row_data["Reported_Date"])
@@ -570,8 +563,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
 
     with open("data/Covid19Canada/timeseries_hr/mortality_timeseries_hr.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if (end_date == None or bc_report_day(row_data["date_death_report"]) <= end_date):
                 if row_data["province"] == "BC":
                     year_week = report_date_to_year_week(
@@ -627,8 +619,7 @@ def bccdc_cases_by_hsda_charts(request, ha=None):
 
     with open("data/BCCDC_COVID19_Regional_Summary_Data.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if ha == None:
                 if row_data["HSDA"] != "All":
                     count[(row_data["Date"], row_data["HSDA"])] = int(row_data["Cases_Reported"])
@@ -702,7 +693,7 @@ def bccdc_cases_by_hsda_charts(request, ha=None):
     chart2.title = " Health Service Delivery Area (HSDA) Cases Reported to Public Health by Day"
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart3 = pygal.HorizontalStackedBar(
         height=400, show_legend=True, legend_at_bottom=True)
@@ -744,8 +735,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if ha == None:
                 l.append((row_data["Reported_Date"], row_data["HA"]))
                 ha_l.append(row_data["HA"])
@@ -810,7 +800,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
     chart2.title = "Health Authority Cases Reported to Public Health by Day"
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart3 = pygal.HorizontalStackedBar(
         height=400, show_legend=True, legend_at_bottom=True)
@@ -854,8 +844,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     
     with open("data/BCCDC_COVID19_Dashboard_Lab_Information.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if ((start_date == None or row_data["Date"] >= start_date) and (end_date == None or row_data["Date"] <= end_date)):
                 if region == None or region == "HA":
                     if row_data["Region"] != "BC":
@@ -897,8 +886,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if ((start_date == None or row_data["Reported_Date"] >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
                 if ha == None or ha == "HA":
                     l.append((row_data["Reported_Date"], row_data["HA"]))
@@ -965,7 +953,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
         region if region != 'HA' else '')
     chart1.x_labels = sorted_report_days
     chart1.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
         
     report_weeks = set()
     for key in new_tests_by_week:
@@ -1008,7 +996,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     chart3.title = "Health Authority Cases Reported to Public Health by Day"
     chart3.x_labels = sorted_report_days
     chart3.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
         
     report_weeks = set()
     for key in new_cases_by_week:
@@ -1046,7 +1034,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
         region if region != 'HA' else '')
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart4 = pygal.Line(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=2,
                         show_legend=True, legend_at_bottom=True, show_minor_x_labels=False)
@@ -1063,7 +1051,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     chart4.title = "Health Authority Total Cases Reported to Public Health by Day"
     chart4.x_labels = sorted_report_days
     chart4.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     return [chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
 
@@ -1080,8 +1068,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
 
     with open("data/BCCDC_COVID19_Dashboard_Lab_Information.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if region == None or region == "HA":
                 if row_data["Region"] != "BC":
                     if ((start_date == None or row_data["Date"] >= start_date) and (end_date == None or row_data["Date"] <= end_date)):
@@ -1134,8 +1121,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
 
     with open("data/BCCDC_COVID19_Dashboard_Case_Details.csv", 'r') as file:
         csv_file = csv.DictReader(file)
-        for row in csv_file:
-            row_data = dict(row)
+        for row_data in csv_file:
             if ((start_date == None or row_data["Reported_Date"] >= start_date) and (end_date == None or row_data["Reported_Date"] <= end_date)):
                 if ha == None or ha == "HA":
                     l.append((row_data["Reported_Date"], row_data["HA"]))
@@ -1179,7 +1165,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         region if region != 'HA' else '')
     chart4.x_labels = sorted_report_days
     chart4.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart1 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
                        show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
@@ -1197,7 +1183,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         region if region != 'HA' else '')
     chart1.x_labels = sorted_report_days
     chart1.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=1,
                        show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
@@ -1214,7 +1200,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         region if region != 'HA' else '')
     chart2.x_labels = sorted_report_days
     chart2.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     sorted_has = sorted(has_list.keys(), key=lambda ha: -
                         region_list.get(ha, 0))
@@ -1237,7 +1223,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         region if region != 'HA' else '')
     chart3.x_labels = sorted_report_days
     chart3.x_labels_major = [
-        day for day in sorted_report_days if day[8:] == "01"]
+        day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     return [chart1.render_data_uri(), chart2.render_data_uri(), chart3.render_data_uri(), chart4.render_data_uri()]
 
