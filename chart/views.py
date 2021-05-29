@@ -166,7 +166,7 @@ def bccdc_cases_by_age_group_charts(request, end_date=None):
     sorted_age = sorted(age_count.keys())
     sorted_report_days = sorted(report_days)
     chart2 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                              show_legend=True, show_minor_x_labels=False)
+                    show_x_guides=True, show_legend=True, show_minor_x_labels=False)
     for age in sorted_age:
         cases_per_day = []
         for day in sorted_report_days:
@@ -262,7 +262,7 @@ def bccdc_cases_by_sex_charts():
 
     sorted_report_days = sorted(report_days)
     chart2 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                              show_legend=True, show_minor_x_labels=False)
+                              show_x_guides=True, show_legend=True, show_minor_x_labels=False)
     for sex in sorted_sex:
         cases_per_day = []
         for day in sorted_report_days:
@@ -352,7 +352,7 @@ def bccdc_ha_cases_and_mortality_charts(request, ha, start_date=None):
 
     sorted_report_days = sorted(report_days)
     chart1 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                       show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                       show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for data in ["deaths", "cases"]:
         cases_per_day = []
         for day in sorted_report_days:
@@ -478,7 +478,7 @@ def bccdc_cases_and_mortality_charts(request, start_date=None, end_date=None):
                              ] += int(row_data["New_Tests"])
 
     sorted_report_days = sorted(report_days)
-    chart1 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart1 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01, show_x_guides=True,
                        show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for data in ["deaths", "cases"]:
         cases_per_day = []
@@ -677,7 +677,7 @@ def bccdc_cases_by_hsda_charts(request, ha=None):
 
 
     sorted_report_days = sorted(report_days)
-    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01, show_x_guides=True,
                               show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
@@ -787,7 +787,7 @@ def bccdc_cases_by_ha_charts(request, ha=None):
     ha_count = Counter(ha_l)
 
     sorted_report_days = sorted(report_days)
-    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01, show_x_guides=True,
                               show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
@@ -936,7 +936,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
         region_list.keys(), key=lambda ha: -region_list[ha])
 
     sorted_report_days = sorted(report_days)
-    chart1 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart1 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01, show_x_guides=True,
                               show_legend=False, show_minor_x_labels=False, legend_at_bottom=True)
 
     for ha in sorted_regions:
@@ -981,7 +981,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     count = Counter(l)
 
     sorted_report_days = sorted(report_days)
-    chart3 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01,
+    chart3 = pygal.StackedBar(height=400, show_x_labels=True, x_label_rotation=0.01, show_x_guides=True,
                               show_legend=False, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
@@ -1020,7 +1020,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
     
     sorted_report_days = sorted(report_days)
     chart2 = pygal.Line(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=2,
-                        show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                 show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_regions:
         lab_info_per_day = []
         for day in sorted_report_days:
@@ -1037,7 +1037,7 @@ def bccdc_cases_and_testing_by_ha_charts(request, ha=None, start_date=None, end_
         day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart4 = pygal.Line(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=2,
-                        show_legend=True, legend_at_bottom=True, show_minor_x_labels=False)
+                       show_x_guides=True, show_legend=True, legend_at_bottom=True, show_minor_x_labels=False)
     for ha in sorted_has:
         cases_per_day = []
         accu_count = 0
@@ -1151,7 +1151,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
     sorted_report_days = sorted(report_days)
 
     chart4 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=1,
-                       show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                       show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_regions:
         lab_info_per_day = []
         for day in sorted_report_days:
@@ -1168,7 +1168,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart1 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                       show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                       show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_regions:
         lab_info_per_day = []
         for day in sorted_report_days:
@@ -1186,7 +1186,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
         day for day in sorted_report_days if day[8:] == "01" and day[5:7] in ["01", "03", "05", "07", "09", "11"]]
 
     chart2 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,  # dots_size=1,
-                       show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                       show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_regions:
         lab_info_per_day = []
         for day in sorted_report_days:
@@ -1208,7 +1208,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
 
     sorted_report_days = sorted(report_days)
     chart3 = pygal.Bar(height=400, show_x_labels=True, x_label_rotation=0.01,
-                       show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
+                       show_x_guides=True, show_legend=True, show_minor_x_labels=False, legend_at_bottom=True)
     for ha in sorted_has:
         cases_per_day = []
         for day in sorted_report_days:
@@ -1231,7 +1231,7 @@ def bccdc_lab_tests_charts(request, region=None, start_date=None, end_date=None)
 
 def bc_report_date_to_year_week(date):
     l = date.split("-")
-    d = datetime.date(int(l[0]), int(l[1]), int(l[2]))
+    d = datetime.date(int(l[0]), int(l[1]), int(l[2][:2]))
     cal = d.isocalendar()
     return cal[:2]
 
